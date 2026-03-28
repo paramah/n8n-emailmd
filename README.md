@@ -14,6 +14,85 @@ n8n community node do wysyłania emaili renderowanych z Markdown za pomocą [ema
 
 ## Instalacja
 
+### Docker z lokalnym volume (zalecane)
+
+Typowa konfiguracja n8n w Dockerze ma volume zamontowany w kontenerze pod `/home/node/.n8n`.
+Na hoście odpowiada mu katalog, który przekazujesz przez `-v` lub w `docker-compose.yml`.
+
+#### Krok 1 — sklonuj i zbuduj plugin na hoście
+
+```bash
+git clone ssh://gitea@git.cynarski.pl:65522/n8n/emailmd.git n8n-nodes-emailmd
+cd n8n-nodes-emailmd
+npm install
+npm run build
+```
+
+#### Krok 2 — skopiuj zbudowany plugin do volume n8n
+
+Zakładając, że volume hosta jest np. w `~/n8n-data`:
+
+```bash
+mkdir -p ~/n8n-data/custom/node_modules/n8n-nodes-emailmd
+cp -r dist package.json node_modules ~/n8n-data/custom/node_modules/n8n-nodes-emailmd/
+```
+
+> Katalog `custom` wewnątrz volume jest automatycznie skanowany przez n8n jako lokalne node_modules.
+
+#### Krok 3 — docker-compose.yml
+
+Dodaj zmienną środowiskową `N8N_CUSTOM_EXTENSIONS` wskazującą na katalog `custom` wewnątrz kontenera:
+
+```yaml
+services:
+  n8n:
+    image: n8nio/n8n
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_CUSTOM_EXTENSIONS=/home/node/.n8n/custom
+    volumes:
+      - ~/n8n-data:/home/node/.n8n
+    restart: unless-stopped
+```
+
+Następnie zrestartuj kontener:
+
+```bash
+docker compose down && docker compose up -d
+```
+
+#### Alternatywa — instalacja wewnątrz kontenera
+
+Jeśli wolisz nie kopiować plików ręcznie, możesz zainstalować plugin bezpośrednio w działającym kontenerze:
+
+```bash
+# wejdź do kontenera
+docker exec -it -u node <nazwa_kontenera> sh
+
+# zainstaluj z lokalnej ścieżki (jeśli masz volume)
+cd /home/node/.n8n
+mkdir -p custom
+cd custom
+npm init -y
+npm install /home/node/.n8n/n8n-nodes-emailmd   # jeśli skopiowałeś katalog do volume
+
+# lub z git (wymaga git w kontenerze)
+npm install git+ssh://gitea@git.cynarski.pl:65522/n8n/emailmd.git
+```
+
+Po wyjściu z kontenera zrestartuj n8n:
+
+```bash
+docker compose restart n8n
+```
+
+#### Weryfikacja
+
+Po uruchomieniu n8n wyszukaj w edytorze node o nazwie **"Send Email (Markdown)"** — jeśli się pojawi, instalacja przebiegła pomyślnie.
+
+---
+
 ### Opcja 1 — npm link (lokalny development)
 
 ```bash
