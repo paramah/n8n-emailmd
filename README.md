@@ -1,25 +1,25 @@
 # n8n-nodes-emailmd
 
-n8n community node do wysyłania emaili renderowanych z Markdown za pomocą [emailmd](https://github.com/unmta/emailmd).
+n8n community node for sending emails rendered from Markdown using [emailmd](https://github.com/unmta/emailmd).
 
-## Funkcje
+## Features
 
-- Pisz treść emaila w Markdown zamiast HTML
-- Obsługa YAML frontmatter (`preheader`, `theme`)
-- Wbudowane motywy: `default`, `light`, `dark`
-- Nadpisywanie kolorów i typografii motywu
-- Wsparcie dla: To, CC, BCC, Reply-To, attachments
-- Automatyczna generacja wersji plain-text
-- Dyrektywy emailmd: `{button}`, `:::callout`, `:::hero`, `:::footer`
+- Write email content in Markdown instead of HTML
+- YAML frontmatter support (`preheader`, `theme`)
+- Built-in themes: `default`, `light`, `dark`
+- Override theme colors and typography
+- Support for: To, CC, BCC, Reply-To, attachments
+- Automatic plain-text version generation
+- emailmd directives: `{button}`, `:::callout`, `:::hero`, `:::footer`
 
-## Instalacja
+## Installation
 
-### Docker z lokalnym volume (zalecane)
+### Docker with local volume (recommended)
 
-Typowa konfiguracja n8n w Dockerze ma volume zamontowany w kontenerze pod `/home/node/.n8n`.
-Na hoście odpowiada mu katalog, który przekazujesz przez `-v` lub w `docker-compose.yml`.
+A typical n8n Docker setup has a volume mounted inside the container at `/home/node/.n8n`.
+On the host it corresponds to the directory you pass via `-v` or in `docker-compose.yml`.
 
-#### Krok 1 — sklonuj i zbuduj plugin na hoście
+#### Step 1 — clone and build the plugin on the host
 
 ```bash
 git clone ssh://gitea@git.cynarski.pl:65522/n8n/emailmd.git n8n-nodes-emailmd
@@ -28,20 +28,20 @@ npm install
 npm run build
 ```
 
-#### Krok 2 — skopiuj zbudowany plugin do volume n8n
+#### Step 2 — copy the built plugin to the n8n volume
 
-Zakładając, że volume hosta jest np. w `~/n8n-data`:
+Assuming the host volume is e.g. at `~/n8n-data`:
 
 ```bash
 mkdir -p ~/n8n-data/custom/node_modules/n8n-nodes-emailmd
 cp -r dist package.json node_modules ~/n8n-data/custom/node_modules/n8n-nodes-emailmd/
 ```
 
-> Katalog `custom` wewnątrz volume jest automatycznie skanowany przez n8n jako lokalne node_modules.
+> The `custom` directory inside the volume is automatically scanned by n8n as local node_modules.
 
-#### Krok 3 — docker-compose.yml
+#### Step 3 — docker-compose.yml
 
-Dodaj zmienną środowiskową `N8N_CUSTOM_EXTENSIONS` wskazującą na katalog `custom` wewnątrz kontenera:
+Add the `N8N_CUSTOM_EXTENSIONS` environment variable pointing to the `custom` directory inside the container:
 
 ```yaml
 services:
@@ -56,126 +56,126 @@ services:
     restart: unless-stopped
 ```
 
-Następnie zrestartuj kontener:
+Then restart the container:
 
 ```bash
 docker compose down && docker compose up -d
 ```
 
-#### Alternatywa — instalacja wewnątrz kontenera
+#### Alternative — install inside the container
 
-Jeśli wolisz nie kopiować plików ręcznie, możesz zainstalować plugin bezpośrednio w działającym kontenerze:
+If you prefer not to copy files manually, you can install the plugin directly in a running container:
 
 ```bash
-# wejdź do kontenera
-docker exec -it -u node <nazwa_kontenera> sh
+# enter the container
+docker exec -it -u node <container_name> sh
 
-# zainstaluj z lokalnej ścieżki (jeśli masz volume)
+# install from a local path (if you have a volume)
 cd /home/node/.n8n
 mkdir -p custom
 cd custom
 npm init -y
-npm install /home/node/.n8n/n8n-nodes-emailmd   # jeśli skopiowałeś katalog do volume
+npm install /home/node/.n8n/n8n-nodes-emailmd   # if you copied the directory to the volume
 
-# lub z git (wymaga git w kontenerze)
+# or from git (requires git in the container)
 npm install git+ssh://gitea@git.cynarski.pl:65522/n8n/emailmd.git
 ```
 
-Po wyjściu z kontenera zrestartuj n8n:
+After exiting the container, restart n8n:
 
 ```bash
 docker compose restart n8n
 ```
 
-#### Weryfikacja
+#### Verification
 
-Po uruchomieniu n8n wyszukaj w edytorze node o nazwie **"Send Email (Markdown)"** — jeśli się pojawi, instalacja przebiegła pomyślnie.
+After n8n starts, search for the node named **"Send Email (Markdown)"** in the editor — if it appears, the installation was successful.
 
 ---
 
-### Opcja 1 — npm link (lokalny development)
+### Option 1 — npm link (local development)
 
 ```bash
-# 1. Zbuduj node
+# 1. Build the node
 cd /path/to/n8n-nodes-emailmd
 npm install
 npm run build
 
-# 2. Zlinkuj lokalnie
+# 2. Link locally
 npm link
 
-# 3. W katalogu n8n
+# 3. In the n8n directory
 cd ~/.n8n
 mkdir -p custom
 cd custom
 npm link n8n-nodes-emailmd
 ```
 
-### Opcja 2 — Ścieżka do custom nodes w n8n
+### Option 2 — custom nodes path in n8n
 
-Ustaw zmienną środowiskową przed uruchomieniem n8n:
+Set the environment variable before starting n8n:
 
 ```bash
 export N8N_CUSTOM_EXTENSIONS="/path/to/n8n-nodes-emailmd"
 n8n start
 ```
 
-### Opcja 3 — npm install (po opublikowaniu)
+### Option 3 — npm install (after publishing)
 
 ```bash
 npm install n8n-nodes-emailmd
 ```
 
-## Konfiguracja
+## Configuration
 
 ### Credentials (SMTP)
 
-Dodaj credentials typu **SMTP**:
-- **Host** — serwer SMTP (np. `smtp.gmail.com`)
-- **Port** — `465` (SSL) lub `587` (STARTTLS)
-- **Secure** — `true` dla portu 465
+Add credentials of type **SMTP**:
+- **Host** — SMTP server (e.g. `smtp.gmail.com`)
+- **Port** — `465` (SSL) or `587` (STARTTLS)
+- **Secure** — `true` for port 465
 - **User** / **Password**
 
-### Parametry node
+### Node parameters
 
-| Pole | Opis |
+| Field | Description |
 |---|---|
-| From Name | Nazwa nadawcy |
-| From Email | Adres nadawcy (wymagany) |
-| To | Odbiorcy (przecinkami) |
-| Subject | Temat (wymagany) |
-| Markdown | Treść w Markdown (wymagany) |
-| Theme | Motyw: default / light / dark |
-| Theme Overrides | Nadpisanie kolorów i fontów |
-| Attachments | Nazwy binary properties |
+| From Name | Sender display name |
+| From Email | Sender address (required) |
+| To | Recipients (comma-separated) |
+| Subject | Subject (required) |
+| Markdown | Content in Markdown (required) |
+| Theme | Theme: default / light / dark |
+| Theme Overrides | Override colors and fonts |
+| Attachments | Binary property names |
 
-## Przykładowy Markdown
+## Example Markdown
 
 ```markdown
 ---
-preheader: Krótki podgląd w skrzynce odbiorczej
+preheader: Short preview shown in the inbox
 ---
 
-# Witaj {{$json.name}}!
+# Hello {{$json.name}}!
 
-Dziękujemy za rejestrację. Twoje konto jest gotowe.
+Thank you for signing up. Your account is ready.
 
 :::callout
-Twój kod aktywacyjny: **{{$json.code}}**
+Your activation code: **{{$json.code}}**
 :::
 
-[Aktywuj konto](https://example.com/activate){button}
+[Activate Account](https://example.com/activate){button}
 
 ---
 
-Jeśli masz pytania, odpowiedz na tego emaila.
+If you have any questions, reply to this email.
 ```
 
-## Obsługiwana składnia emailmd
+## Supported emailmd syntax
 
-- **Przyciski**: `[tekst](url){button}` lub `{button .success}`, `{button .danger}`
+- **Buttons**: `[text](url){button}` or `{button .success}`, `{button .danger}`
 - **Callout**: `:::callout ... :::`
 - **Hero**: `:::hero ... :::`
 - **Header/Footer**: `:::header ... :::`, `:::footer ... :::`
-- **Wyrównanie**: `:::centered ... :::`
-- **Tabele**, listy, kod, obrazy — standardowy Markdown
+- **Alignment**: `:::centered ... :::`
+- **Tables**, lists, code, images — standard Markdown
