@@ -10,13 +10,13 @@
     "emailmd"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/unmta/emailmd",
+  "homepage": "https://github.com/paramah/n8n-emailmd",
   "author": {
-    "name": "n8n-nodes-emailmd"
+    "name": "paramah"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/unmta/emailmd.git"
+    "url": "git+https://github.com/paramah/n8n-emailmd.git"
   },
   "main": "index.js",
   "scripts": {
