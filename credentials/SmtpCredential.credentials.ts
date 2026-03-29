@@ -1,7 +1,7 @@
 import type { ICredentialType, INodeProperties } from 'n8n-workflow';
 
 export class SmtpCredential implements ICredentialType {
-	name = 'smtp';
+	name = 'smtpApi';
 	displayName = 'SMTP';
 	documentationUrl = 'https://docs.n8n.io/integrations/builtin/credentials/sendemail/';
 	properties: INodeProperties[] = [

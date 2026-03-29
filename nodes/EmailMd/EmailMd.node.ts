@@ -4,7 +4,7 @@ import type {
 	INodeType,
 	INodeTypeDescription,
 } from 'n8n-workflow';
-import { NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
+import { NodeOperationError } from 'n8n-workflow';
 import { render } from 'emailmd';
 import nodemailer from 'nodemailer';
 import type Mail from 'nodemailer/lib/mailer';
@@ -20,11 +20,11 @@ export class EmailMd implements INodeType {
 		defaults: {
 			name: 'Send Email (Markdown)',
 		},
-		inputs: [NodeConnectionTypes.Main],
-		outputs: [NodeConnectionTypes.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
-				name: 'smtp',
+				name: 'smtpApi',
 				required: true,
 			},
 		],
@@ -105,7 +105,7 @@ Welcome to our service. Here's what you need to know.
 [Get Started](https://example.com){button}
 `,
 				description:
-					'Markdown content to render. Supports YAML frontmatter for preheader and theme settings. Expressions like {{$json.name}} are evaluated before rendering.',
+					'Markdown content to render. Supports YAML frontmatter for preheader and theme settings. Expressions like {{$JSON.name}} are evaluated before rendering.',
 				required: true,
 				noDataExpression: false,
 			},
@@ -132,16 +132,16 @@ Welcome to our service. Here's what you need to know.
 				description: 'Custom theme color and typography overrides',
 				options: [
 					{
-						displayName: 'Brand Color',
-						name: 'brandColor',
-						type: 'color',
-						default: '#1a56db',
-					},
-					{
 						displayName: 'Background Color',
 						name: 'backgroundColor',
 						type: 'color',
 						default: '#f4f4f5',
+					},
+					{
+						displayName: 'Brand Color',
+						name: 'brandColor',
+						type: 'color',
+						default: '#1a56db',
 					},
 					{
 						displayName: 'Content Background',
@@ -150,16 +150,11 @@ Welcome to our service. Here's what you need to know.
 						default: '#ffffff',
 					},
 					{
-						displayName: 'Text Color',
-						name: 'bodyColor',
-						type: 'color',
-						default: '#374151',
-					},
-					{
-						displayName: 'Heading Color',
-						name: 'headingColor',
-						type: 'color',
-						default: '#111827',
+						displayName: 'Content Width',
+						name: 'contentWidth',
+						type: 'string',
+						default: '600px',
+						placeholder: '600px',
 					},
 					{
 						displayName: 'Font Family',
@@ -169,11 +164,16 @@ Welcome to our service. Here's what you need to know.
 						placeholder: 'Arial, sans-serif',
 					},
 					{
-						displayName: 'Content Width',
-						name: 'contentWidth',
-						type: 'string',
-						default: '600px',
-						placeholder: '600px',
+						displayName: 'Heading Color',
+						name: 'headingColor',
+						type: 'color',
+						default: '#111827',
+					},
+					{
+						displayName: 'Text Color',
+						name: 'bodyColor',
+						type: 'color',
+						default: '#374151',
 					},
 				],
 			},
@@ -195,7 +195,7 @@ Welcome to our service. Here's what you need to know.
 		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
 
-		const credentials = await this.getCredentials('smtp');
+		const credentials = await this.getCredentials('smtpApi');
 
 		const transporter = nodemailer.createTransport({
 			host: credentials.host as string,
